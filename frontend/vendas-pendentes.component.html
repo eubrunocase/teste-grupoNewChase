@@ -1,0 +1,19 @@
+<table>
+  <tr>
+    <th></th>
+    <th>Loja</th>
+    <th>Veículo</th>
+    <th>Cliente</th>
+    <th>Valor</th>
+    <th>Status</th>
+  </tr>
+  <tr *ngFor="let v of vendas">
+    <td><input type="checkbox" (change)="toggle(v.id)" /></td>
+    <td>{{ v.loja }}</td>
+    <td>{{ v.veiculo }}</td>
+    <td>{{ v.cliente }}</td>
+    <td>{{ v.valorVenda | currency:'BRL' }}</td>
+    <td>{{ v.status }}</td>
+  </tr>
+</table>
+<button (click)="faturarSelecionadas()">Faturar selecionadas</button>
