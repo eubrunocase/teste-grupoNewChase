@@ -1,6 +1,7 @@
-import { IsString } from 'class-validator';
+import { IsEnum } from 'class-validator';
+import { statusVenda } from '../enums/status-venda.enum';
 
 export class AtualizarStatusDto {
-  @IsString()
-  status: string;
+  @IsEnum(statusVenda)
+  status: statusVenda
 }

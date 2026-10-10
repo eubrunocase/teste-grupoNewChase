@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { statusVenda } from './enums/status-venda.enum';
 
 @Entity('venda_pendente')
 export class VendaPendente {
@@ -18,7 +19,7 @@ export class VendaPendente {
   valorVenda: number;
 
   @Column({ default: 'PENDENTE' })
-  status: string;
+  status: statusVenda;
 
   @Column({ type: 'date' })
   dataVenda: Date;
