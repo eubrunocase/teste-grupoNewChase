@@ -1,38 +1,57 @@
-# Demanda 1: Saber quais vendas tiveram sucesso ou falha. E porque. 
-* Arquivo: venda-pendente.service.ts
+# Demanda 1: Saber quais vendas tiveram sucesso ou falha, e por quê
 
-* Ponderações:
-- Função atualizarStatusEmLote está engolindo todas as exceções e sempre retornando a mensagem 'Lote processado'.
-- Sem a verificação, caso o ID não exista o findOne devolverá null. Estourando um type error, gerando exceção mas sendo engolida pelo catch de forma inadequada.
-- Sem transação: em casos de falhas o lote fica parcialmente completo.
-- Problema de N+1 queries, findOne + save por Id.
-- Parâmetro novoStatus não é validado
+**Arquivo:** `venda-pendente.service.ts`
 
-## Solução para Demanda 1: 
+## Ponderações
 
-* Definir um Enum de status e validar o payload
-- Classificar os IDs antes de atualizar, dentro de uma transaction
-- Retornar um contrato explícito das operações realizadas
-- Restringir a mudança de estado de CANCELADO -> FATURADO.
-- Deduplicar IDs para impor um limite máximo por lote.
+- A função `atualizarStatusEmLote` engole todas as exceções e sempre retorna a mensagem `'Lote processado'`.
+- Sem verificação, se o ID não existir, o `findOne` devolve `null`. Isso estoura um `TypeError`, que gera uma exceção, mas ela é engolida pelo `catch` de forma inadequada.
+- Não há transação: em caso de falha, o lote fica parcialmente completo.
+- Problema de N+1 queries: `findOne` + `save` por ID.
+- O parâmetro `novoStatus` não é validado.
 
-## Demanda 2: Resumo por lojas está lento
-* Ponto focal: getResumoPorLoja()
+## Solução
 
-- Problema: a função traz todos os registros do banco de dados e os agrega em memória. Desse jeito o crescimento linear foca no volume de dados e na rede. 
-- Não existem índices em status/loja
+- Definir um Enum de status e validar o payload.
+- Classificar os IDs antes de atualizar, dentro de uma transaction.
+- Retornar um contrato explícito das operações realizadas.
+- Restringir a mudança de estado de `CANCELADO` para `FATURADO`.
+- Deduplicar os IDs e impor um limite máximo por lote.
 
-## Solução para demanda 2:
+---
 
-* Agregação no banco de dados
-- Criação de índices
-- Retornar um array tipado no lugar do record.
+# Demanda 2: Resumo por lojas está lento
 
-## Demanda 3: Filtro por período:
-* Problema: Não existem filtros específicos, apenas findAll que monta o where com loja/status
+**Ponto focal:** `getResumoPorLoja()`
 
-## Solução para demanda 3:
-* DTO de query para aplicar os filtros
-- QueryBuilder com intervalo aberto
-- Validação da ordem dos parâmetros, com retorno 400 se estiverem invertidos
-- Aplicar os mesmos filtros para getResumo
+## Problema
+
+- A função traz todos os registros do banco de dados e os agrega em memória. Dessa forma, o custo cresce linearmente com o volume de dados e o tráfego de rede.
+- Não existem índices em `status` e `loja`.
+
+## Solução
+
+- Fazer a agregação no banco de dados.
+- Criar índices.
+- Retornar um array tipado no lugar do `Record`.
+
+---
+
+# Demanda 3: Filtro por período
+
+## Problema
+
+- Não existem filtros específicos, apenas o `findAll`, que monta o `where` com loja/status.
+
+## Solução
+
+- Criar um DTO de query para aplicar os filtros.
+- Usar `QueryBuilder` com intervalo aberto.
+- Validar a ordem dos parâmetros, retornando 400 se estiverem invertidos.
+- Aplicar os mesmos filtros em `getResumo`.
+
+
+ # Observação
+
+  - Devido ao prazo apertado da entrega, pois eu só pude trabalhar na sexta(09/10/26) a noite. Não caprichei muito no frontend, apenas o tornei básico e funcional.
+  - Utilizei IA CLI para escritas de testes unitários e auxilio em determinadas funções

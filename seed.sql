@@ -18,3 +18,7 @@ INSERT INTO venda_pendente (loja, veiculo, cliente, valorVenda, status, dataVend
 ('Loja Sul', 'Kicks 2022', 'Julia Costa', 95000.00, 'CANCELADO', '2026-03-30'),
 ('Loja Centro', 'Compass 2023', 'Fernando Dias', 175000.00, 'PENDENTE', '2026-07-01'),
 ('Loja Norte', 'Creta 2023', 'Beatriz Nunes', 118000.00, 'PENDENTE', '2026-07-05');
+
+
+CREATE INDEX idx_vp_status_data_loja ON venda_pendente (status, dataVenda, loja);
+CREATE INDEX idx_vp_loja_status ON venda_pendente (loja, status);

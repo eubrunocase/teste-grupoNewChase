@@ -1,0 +1,148 @@
+<main class="vendas-pendentes">
+  <h1>Controle de vendas pendentes de faturamento</h1>
+
+  <p class="erro" *ngIf="erro">{{ erro }}</p>
+
+  <!-- FILTROS -->
+  <section class="filtros" aria-label="Filtros">
+    <label>
+      Loja
+      <input type="text" list="lojas" [(ngModel)]="filtroLoja" placeholder="Todas as lojas" />
+      <datalist id="lojas">
+        <option *ngFor="let loja of lojas" [value]="loja">{{ loja }}</option>
+      </datalist>
+    </label>
+
+    <label>
+      Status
+      <select [(ngModel)]="statusSelecionado">
+        <option value="">Todos</option>
+        <option *ngFor="let status of statusOpcoes" [value]="status">{{ status }}</option>
+      </select>
+    </label>
+
+    <label>
+      Data de
+      <input type="date" [(ngModel)]="dataDe" />
+    </label>
+
+    <label>
+      Data até
+      <input type="date" [(ngModel)]="dataAte" />
+    </label>
+
+    <div class="acoes-filtro">
+      <button type="button" (click)="aplicarFiltros()">Aplicar filtros</button>
+      <button type="button" class="secundario" (click)="limparFiltros()">Limpar</button>
+    </div>
+  </section>
+
+  <!-- RESUMO POR LOJA -->
+  <section class="resumo" aria-label="Resumo por loja">
+    <h2>Resumo por loja</h2>
+    <div class="cards" *ngIf="resumo.length > 0">
+      <article class="card" *ngFor="let r of resumo">
+        <span class="card-loja">{{ r.loja }}</span>
+        <span class="card-qtd">{{ r.pendente }} pendente{{ r.pendente === 1 ? '' : 's' }}</span>
+        <span class="card-valor">{{ r.valorTotal | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</span>
+      </article>
+    </div>
+    <p class="vazio" *ngIf="resumo.length === 0">
+      Nenhuma venda pendente para os filtros atuais.
+    </p>
+  </section>
+
+  <!-- AÇÕES EM LOTE -->
+  <section class="acoes-lote" aria-label="Ações em lote">
+    <span class="contador">{{ selecionadas.size }} selecionada(s)</span>
+    <button
+      type="button"
+      [disabled]="selecionadas.size === 0"
+      (click)="faturarSelecionadas()"
+    >
+      Faturar selecionadas
+    </button>
+    <button
+      type="button"
+      class="secundario"
+      [disabled]="selecionadas.size === 0"
+      (click)="cancelarSelecionadas()"
+    >
+      Cancelar selecionadas
+    </button>
+    <span class="carregando" *ngIf="carregando">Processando…</span>
+  </section>
+
+  <!-- LISTAGEM -->
+  <section class="tabela" aria-label="Listagem de vendas">
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Loja</th>
+          <th>Veículo</th>
+          <th>Cliente</th>
+          <th>Valor</th>
+          <th>Status</th>
+          <th>Data da venda</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let v of vendas">
+          <td>
+            <input
+              type="checkbox"
+              [checked]="selecionadas.has(v.id)"
+              (change)="toggle(v.id)"
+              aria-label="Selecionar venda {{ v.id }}"
+            />
+          </td>
+          <td>{{ v.loja }}</td>
+          <td>{{ v.veiculo }}</td>
+          <td>{{ v.cliente }}</td>
+          <td>{{ formatarValor(v) }}</td>
+          <td><span [class]="statusClasse(v.status)">{{ v.status }}</span></td>
+          <td>{{ v.dataVenda }}</td>
+          <td>
+            <button
+              *ngIf="v.status === 'PENDENTE'"
+              type="button"
+              class="link"
+              (click)="faturarIndividual(v.id)"
+            >
+              Faturar
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="vendas.length === 0">
+          <td colspan="8" class="vazio">
+            Nenhuma venda encontrada para os filtros selecionados.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- FEEDBACK DO LOTE -->
+  <section class="feedback" *ngIf="ultimaOperacao as resultado">
+    <h2>Resultado da operação em lote</h2>
+    <p class="feedback-resumo">
+      {{ resultado.sucesso }} de {{ resultado.total }} venda(s) atualizada(s) —
+      {{ resultado.falhas }} falha(s).
+    </p>
+    <div class="falhas" *ngIf="resultado.falhas > 0">
+      <h3>Não foi possível atualizar:</h3>
+      <ul>
+        <li *ngFor="let falha of falhasDetalhadas">
+          <strong>Venda {{ falha.id }}</strong>
+          <span *ngIf="falha.descricao">({{ falha.descricao }})</span> —
+          {{ falha.motivo }}
+        </li>
+      </ul>
+    </div>
+    <button type="button" class="secundario" (click)="ultimaOperacao = undefined">
+      Fechar
+    </button>
+  </section>
+</main>
